@@ -21,7 +21,7 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
 open import Relation.Nullary using (¬_)
 open import Data.Product using (_×_; proj₁; proj₂) renaming (_,_ to ⟨_,_⟩)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import plfa.part1.Isomorphism using (_≃_; extensionality)
+open import plfa.part1.Isomorphism using (_≃_; extensionality; _∘_)
 ```
 
 
@@ -92,9 +92,15 @@ dependent product is ambiguous.
 
 Show that universals distribute over conjunction:
 ```
-postulate
-  ∀-distrib-× : ∀ {A : Set} {B C : A → Set} →
-    (∀ (x : A) → B x × C x) ≃ (∀ (x : A) → B x) × (∀ (x : A) → C x)
+
+∀-distrib-× : ∀ {A : Set} {B C : A → Set} →
+  (∀ (x : A) → B x × C x) ≃ (∀ (x : A) → B x) × (∀ (x : A) → C x)
+∀-distrib-× = record {
+  to = λ a_to_b_and_c → ⟨ (λ x →  proj₁ (a_to_b_and_c x)) , (λ x → proj₂ (a_to_b_and_c x)) ⟩ ;
+  from = λ fxg x → ⟨ proj₁ fxg x , proj₂ fxg x ⟩ ;
+  from∘to = λ f → refl ;
+  to∘from = λ fxg → refl
+  }
 ```
 Compare this with the result (`→-distrib-×`) in
 Chapter [Connectives]({{ site.baseurl }}/Connectives/).
@@ -103,9 +109,11 @@ Chapter [Connectives]({{ site.baseurl }}/Connectives/).
 
 Show that a disjunction of universals implies a universal of disjunctions:
 ```
-postulate
-  ⊎∀-implies-∀⊎ : ∀ {A : Set} {B C : A → Set} →
-    (∀ (x : A) → B x) ⊎ (∀ (x : A) → C x)  →  ∀ (x : A) → B x ⊎ C x
+⊎∀-implies-∀⊎ : ∀ {A : Set} {B C : A → Set} →
+  (∀ (x : A) → B x) ⊎ (∀ (x : A) → C x)  →  ∀ (x : A) → B x ⊎ C x
+⊎∀-implies-∀⊎ (inj₁ forg) x = inj₁ (forg x)
+⊎∀-implies-∀⊎ (inj₂ forg) x = inj₂ (forg x)
+
 ```
 Does the converse hold? If so, prove; if not, explain why.
 
@@ -248,9 +256,14 @@ establish the isomorphism is identical to what we wrote when discussing
 
 Show that existentials distribute over disjunction:
 ```
-postulate
-  ∃-distrib-⊎ : ∀ {A : Set} {B C : A → Set} →
-    ∃[ x ] (B x ⊎ C x) ≃ (∃[ x ] B x) ⊎ (∃[ x ] C x)
+∃-distrib-⊎ : ∀ {A : Set} {B C : A → Set} →
+  ∃[ x ] (B x ⊎ C x) ≃ (∃[ x ] B x) ⊎ (∃[ x ] C x)
+∃-distrib-⊎ = record {
+  to = λ{ ⟨ x , inj₁ bx ⟩ → inj₁ ⟨ x , bx ⟩ ; ⟨ x , inj₂ cx ⟩ → inj₂ ⟨ x , cx ⟩ } ;
+  from = λ{ (inj₁ ⟨ x , bx ⟩) → ⟨ x , inj₁ bx ⟩ ; (inj₂ ⟨ x , cx ⟩) → ⟨ x , inj₂ cx ⟩ } ;
+  from∘to = λ { (⟨ x , inj₁ bx ⟩) → refl ; (⟨ x , inj₂ cx ⟩) → refl } ;
+  to∘from = λ { (inj₁ ⟨ x , bx ⟩) → refl ; (inj₂ ⟨ x , cx ⟩) → refl }
+  }
 ```
 
 #### Exercise `∃×-implies-×∃` (practice)
